@@ -1,0 +1,219 @@
+ public static class HttpClientExtensions
+    {
+        public const string XApplicationJson = "application/json";
+        public const string XApplicationJwk = "application/jwk+json";
+        public const string XApplicationXWwwFormUrlencoded = "application/x-www-form-urlencoded";
+        public const string XTextHtml = "text/html";
+       
+        public static async Task<(HttpResponseMessage, T)> GetAsync<T>(this HttpClient httpClient,                        
+            string path = null,                       
+            IDictionary<string,string> headers = null,
+            JsonSerializerSettings serializerSettings = null,
+            Func<HttpResponseMessage,Task> responseAction = null) where T :new()
+        {
+            var response = await httpClient.SendAsync(HttpMethod.Get, path, null, headers, responseAction);
+            return  (response, await response.ParseContent<T>(serializerSettings));
+        }
+
+        public static async Task<HttpResponseMessage> GetAsync(this HttpClient httpClient,                        
+            string path = null,                       
+            IDictionary<string,string> headers = null,
+            JsonSerializerSettings serializerSettings = null,
+            Func<HttpResponseMessage,Task> responseAction = null)
+        {
+            return await httpClient.SendAsync(HttpMethod.Get, path, null, headers, responseAction);
+        }
+
+        public static async Task<(HttpResponseMessage, T)> PostAsStringAsync<T>(this HttpClient httpClient,            
+            object data,
+            string mediaType,
+            string path = null,                       
+            IDictionary<string,string> headers = null,
+            Func<HttpResponseMessage,Task> responseAction = null) where T :new()
+        {
+            var response = await httpClient.SendAsync(HttpMethod.Post, path, data.ToHttpContent(mediaType), headers.ToDefaultJsonHeaders(), responseAction);
+            return  (response, await response.ParseContent<T>());
+        }
+
+        public static async Task<HttpResponseMessage> PostAsStringAsync(this HttpClient httpClient,            
+            object data,
+            string mediaType,
+            string path = null,                       
+            IDictionary<string,string> headers = null,
+            Func<HttpResponseMessage,Task> responseAction = null)
+        {
+            return await httpClient.SendAsync(HttpMethod.Post, path, data.ToHttpContent(mediaType), headers.ToDefaultJsonHeaders(), responseAction);
+        }
+
+        public static async Task<(HttpResponseMessage, T)> PostAsJsonAsync<T>(this HttpClient httpClient,            
+            object data,
+            string path = null,                       
+            IDictionary<string,string> headers = null,
+            JsonSerializerSettings serializerSettings = null,
+            Func<HttpResponseMessage,Task> responseAction = null) where T :new()
+        {
+            var response = await httpClient.SendAsync(HttpMethod.Post, path, data.ToJsonHttpContent(serializerSettings), headers.ToDefaultJsonHeaders(), responseAction);
+            return  (response, await response.ParseContent<T>(serializerSettings));
+        }
+
+        public static async Task<HttpResponseMessage> PostAsJsonAsync(this HttpClient httpClient,            
+            object data,
+            string path = null,                       
+            IDictionary<string,string> headers = null,
+            JsonSerializerSettings serializerSettings = null,
+            Func<HttpResponseMessage,Task> responseAction = null)
+        {
+            return await httpClient.SendAsync(HttpMethod.Post, path, data.ToJsonHttpContent(serializerSettings), headers.ToDefaultJsonHeaders(), responseAction);
+        }
+
+        public static async Task<(HttpResponseMessage, T)> PostUrlEncodedAsync<T>(this HttpClient httpClient,            
+            IEnumerable<KeyValuePair<string,string>> data,
+            string path = null,                       
+            IDictionary<string,string> headers = null,
+            JsonSerializerSettings serializerSettings = null,
+            Func<HttpResponseMessage,Task> responseAction = null) where T :new()
+        {
+            var response = await httpClient.SendAsync(HttpMethod.Post, path, new FormUrlEncodedContent(data), headers, responseAction);
+            return  (response, await response.ParseContent<T>(serializerSettings));
+        }
+
+        public static async Task<HttpResponseMessage> PostUrlEncodedAsync(this HttpClient httpClient,            
+            IEnumerable<KeyValuePair<string,string>> data,
+            string path = null,                       
+            IDictionary<string,string> headers = null,
+            JsonSerializerSettings serializerSettings = null,
+            Func<HttpResponseMessage,Task> responseAction = null)
+        {
+            return await httpClient.SendAsync(HttpMethod.Post, path, new FormUrlEncodedContent(data), headers, responseAction);
+        }
+
+        private static async Task<HttpResponseMessage> SendAsync(this HttpClient httpClient,
+            HttpMethod httpMethod,
+            string path = null,
+            HttpContent content = null,
+            IDictionary<string,string> headers = null,
+            Func<HttpResponseMessage,Task> responseAction = null)
+        {
+            var requestMessage = new HttpRequestMessage(httpMethod, path);
+
+            if (content != null)
+            {
+                requestMessage.Content = content;
+            }
+
+            if (headers != null)
+            {
+                foreach (var (key, value) in headers) requestMessage.Headers.Add(key, value);
+            }
+
+            var response = await httpClient.SendAsync(requestMessage);
+            if (responseAction!=null)
+            {
+                await responseAction?.Invoke(response);
+            }
+            
+            return response;
+        }
+        private static async Task ConvertToTask(Action<HttpResponseMessage> responseAction, HttpResponseMessage response)
+        {
+            responseAction.Invoke(response);
+            await Task.FromResult(true);
+        }
+
+        public static HttpContent ToJsonHttpContent(this object data, JsonSerializerSettings serializerSettings = null)
+        {
+            return data is string strData
+                ? new StringContent(strData, Encoding.UTF8, XApplicationJson)
+                : new StringContent(
+                    serializerSettings == null
+                        ? JsonConvert.SerializeObject(data)
+                        : JsonConvert.SerializeObject(data, serializerSettings), Encoding.UTF8, XApplicationJson);
+        }
+        
+        public static HttpContent ToHttpContent(this object data, string mediaType)
+        {
+            return new StringContent(data.ToString(), Encoding.UTF8, mediaType);
+        }
+
+        public static IDictionary<string,string> ToDefaultJsonHeaders(this IDictionary<string,string> headers)
+        {
+            if (headers == null)
+            {
+                headers = new Dictionary<string, string>();
+            }
+
+            headers["accept"] = XApplicationJson;
+            return headers;
+        }
+
+        public static IDictionary<string,string> ToDefaultHtmlHeaders(this IDictionary<string,string> headers)
+        {
+            if (headers == null)
+            {
+                headers = new Dictionary<string, string>();
+            }
+            headers["accept"] = XTextHtml;
+            return headers;
+        }
+
+        public static IDictionary<string,string> ToDefaultUrlEncodedHeaders(this IDictionary<string,string> headers)
+        {
+            if (headers == null)
+            {
+                headers = new Dictionary<string, string>();
+            }
+            headers["accept"] = XApplicationXWwwFormUrlencoded;
+            return headers;
+        }
+        
+        public static async Task<T> ParseContent<T>(this HttpResponseMessage message, JsonSerializerSettings serializerSettings = null) where T: new()
+        {
+            if (typeof(T) == typeof(HttpResponseMessage))
+            {
+                return (T)Convert.ChangeType(message, typeof(HttpResponseMessage));
+            }
+
+            var contentType = message.Content?.Headers.ContentType?.MediaType;
+            if (contentType == null)
+            {
+                return default;
+            }
+
+            var contents = await message.Content?.ReadAsStringAsync();
+
+            if (contents == null)
+            {
+                return default;
+            }
+
+            switch (contentType)
+            {
+                case XApplicationJson:
+                case XApplicationJwk:
+                    return serializerSettings == null ?
+                        JsonConvert.DeserializeObject<T>(contents):
+                        JsonConvert.DeserializeObject<T>(contents, serializerSettings);
+                case XApplicationXWwwFormUrlencoded:
+                    var collection = HttpUtility.ParseQueryString(contents);                    
+                    var obj = new T();
+                    foreach(string key in collection.Keys)
+                    {
+                        var property = obj.GetType().GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
+                        if (property != null)
+                        {
+                            property.SetValue(obj, collection[key]);
+                        }
+                    }
+                    break;
+                case XTextHtml:
+                    if (typeof(T) == typeof(HtmlDocument))
+                    {
+                        var doc = new HtmlDocument();
+                        doc.LoadHtml(contents);
+                        return (T)Convert.ChangeType(doc, typeof(HtmlDocument));
+                    } 
+                    break;
+            }
+            throw new NotSupportedException($"content-type {contentType} not supported");
+        }
+    }
