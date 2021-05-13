@@ -1,33 +1,10 @@
+// index.js
+
 "use strict";
-
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-/*!
- * Mvc.Grid 7.0.0
- *
- * Copyright © NonFactors
- *
- * Licensed under the terms of the MIT License
- * https://www.opensource.org/licenses/mit-license.php
- */
-var MvcGrid = function () {
-    function MvcGrid(container) {
-        var options = arguments.length <= 1 || arguments[1] === undefined ? {} : arguments[1];
-
-        _classCallCheck(this, MvcGrid);
-
-        var grid = this;
-        var element = grid.findGrid(container);
+class MvcGrid {
+    constructor(container, options={}) {
+        const grid = this;
+        const element = grid.findGrid(container);
 
         if (element.dataset.id) {
             return MvcGrid.instances[parseInt(element.dataset.id)].set(options);
@@ -40,12 +17,12 @@ var MvcGrid = function () {
         grid.name = element.dataset.name;
         grid.controller = new AbortController();
         grid.isAjax = Boolean(element.dataset.url);
-        grid.prefix = grid.name ? grid.name + "-" : "";
+        grid.prefix = grid.name ? `${grid.name}-` : "";
         grid.filterMode = (element.dataset.filterMode || "").toLowerCase();
         element.dataset.id = options.id || MvcGrid.instances.length.toString();
         grid.url = element.dataset.url ? new URL(element.dataset.url, location.href) : new URL(location.href);
         grid.url = options.url ? new URL(options.url.toString(), location.href) : grid.url;
-        grid.url = options.query ? new URL("?" + options.query, grid.url.href) : grid.url;
+        grid.url = options.query ? new URL(`?${options.query}`, grid.url.href) : grid.url;
         grid.sort = grid.buildSort();
         grid.filters = {
             default: MvcGridFilter,
@@ -55,40 +32,16 @@ var MvcGrid = function () {
             number: MvcGridNumberFilter
         };
 
-        var headers = element.querySelector(".mvc-grid-headers");
-        var rowFilters = element.querySelectorAll(".mvc-grid-row-filters th");
+        const headers = element.querySelector(".mvc-grid-headers");
+        const rowFilters = element.querySelectorAll(".mvc-grid-row-filters th");
 
         if (headers) {
-            var _iteratorNormalCompletion = true;
-            var _didIteratorError = false;
-            var _iteratorError = undefined;
-
-            try {
-                for (var _iterator = headers.querySelectorAll("th").entries()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                    var _step$value = _slicedToArray(_step.value, 2);
-
-                    var i = _step$value[0];
-                    var header = _step$value[1];
-
-                    grid.columns.push(new MvcGridColumn(grid, header, rowFilters[i]));
-                }
-            } catch (err) {
-                _didIteratorError = true;
-                _iteratorError = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion && _iterator.return) {
-                        _iterator.return();
-                    }
-                } finally {
-                    if (_didIteratorError) {
-                        throw _iteratorError;
-                    }
-                }
+            for (const [i, header] of headers.querySelectorAll("th").entries()) {
+                grid.columns.push(new MvcGridColumn(grid, header, rowFilters[i]));
             }
         }
 
-        var pager = element.querySelector(".mvc-grid-pager");
+        const pager = element.querySelector(".mvc-grid-pager");
 
         if (pager) {
             grid.pager = new MvcGridPager(grid, pager);
@@ -109,332 +62,193 @@ var MvcGrid = function () {
         }
     }
 
-    _createClass(MvcGrid, [{
-        key: "set",
-        value: function set(options) {
-            var grid = this;
+    set(options) {
+        const grid = this;
 
-            grid.loadingDelay = typeof options.loadingDelay === "undefined" ? grid.loadingDelay : options.loadingDelay;
-            grid.url = options.url ? new URL(options.url.toString(), location.href) : grid.url;
-            grid.url = options.query ? new URL("?" + options.query, grid.url.href) : grid.url;
-            grid.isAjax = typeof options.isAjax === "boolean" ? options.isAjax : grid.isAjax;
-            grid.filters = Object.assign(grid.filters, options.filters);
+        grid.loadingDelay = typeof options.loadingDelay === "undefined" ? grid.loadingDelay : options.loadingDelay;
+        grid.url = options.url ? new URL(options.url.toString(), location.href) : grid.url;
+        grid.url = options.query ? new URL(`?${options.query}`, grid.url.href) : grid.url;
+        grid.isAjax = typeof options.isAjax === "boolean" ? options.isAjax : grid.isAjax;
+        grid.filters = Object.assign(grid.filters, options.filters);
 
-            var _iteratorNormalCompletion2 = true;
-            var _didIteratorError2 = false;
-            var _iteratorError2 = undefined;
-
-            try {
-                for (var _iterator2 = grid.columns[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                    var column = _step2.value;
-
-                    if (column.filter && grid.filters[column.filter.name]) {
-                        column.filter.instance = new grid.filters[column.filter.name](column);
-                        column.filter.instance.init();
-                    }
-                }
-            } catch (err) {
-                _didIteratorError2 = true;
-                _iteratorError2 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                        _iterator2.return();
-                    }
-                } finally {
-                    if (_didIteratorError2) {
-                        throw _iteratorError2;
-                    }
-                }
+        for (const column of grid.columns) {
+            if (column.filter && grid.filters[column.filter.name]) {
+                column.filter.instance = new grid.filters[column.filter.name](column);
+                column.filter.instance.init();
             }
-
-            return grid;
         }
-    }, {
-        key: "showConfiguration",
-        value: function showConfiguration(anchor) {
-            MvcGridPopup.showConfiguration(this, anchor);
-        }
-    }, {
-        key: "getConfiguration",
-        value: function getConfiguration() {
-            return {
-                name: this.name,
-                columns: this.columns.map(function (column) {
-                    return { name: column.name, hidden: column.isHidden };
-                })
-            };
-        }
-    }, {
-        key: "configure",
-        value: function configure(configuration) {
-            var _this = this;
 
-            configuration.columns.forEach(function (column, index) {
-                var rows = _this.element.querySelectorAll("tr");
-                var i = _this.columns.findIndex(function (col) {
-                    return col.name.toLowerCase() === column.name.toLowerCase();
-                });
+        return grid;
+    }
+    showConfiguration(anchor) {
+        MvcGridPopup.showConfiguration(this, anchor);
+    }
+    getConfiguration() {
+        return {
+            name: this.name,
+            columns: this.columns.map(column => ({ name: column.name, hidden: column.isHidden }))
+        };
+    }
+    configure(configuration) {
+        configuration.columns.forEach((column, index) => {
+            const rows = this.element.querySelectorAll("tr");
+            const i = this.columns.findIndex(col => col.name.toLowerCase() === column.name.toLowerCase());
 
-                if (i >= 0) {
-                    _this.columns[i].isHidden = column.hidden;
+            if (i >= 0) {
+                this.columns[i].isHidden = column.hidden;
 
-                    var _iteratorNormalCompletion3 = true;
-                    var _didIteratorError3 = false;
-                    var _iteratorError3 = undefined;
-
-                    try {
-                        for (var _iterator3 = rows[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                            var tr = _step3.value;
-
-                            if (column.hidden) {
-                                tr.children[i].classList.add("mvc-grid-hidden");
-                            } else {
-                                tr.children[i].classList.remove("mvc-grid-hidden");
-                            }
-
-                            if (i !== index) {
-                                tr.insertBefore(tr.children[i], tr.children[index]);
-                            }
-                        }
-                    } catch (err) {
-                        _didIteratorError3 = true;
-                        _iteratorError3 = err;
-                    } finally {
-                        try {
-                            if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                                _iterator3.return();
-                            }
-                        } finally {
-                            if (_didIteratorError3) {
-                                throw _iteratorError3;
-                            }
-                        }
-                    }
-
-                    _this.columns.splice(i - (index < i ? 1 : 0), 0, _this.columns.splice(index, 1)[0]);
-                }
-            });
-        }
-    }, {
-        key: "reload",
-        value: function reload() {
-            var grid = this;
-
-            grid.element.dispatchEvent(new CustomEvent("reloadstart", {
-                detail: { grid: grid },
-                bubbles: true
-            }));
-
-            if (grid.isAjax) {
-                var url = new URL(grid.url.href);
-
-                grid.controller.abort();
-                MvcGridPopup.lastActiveElement = null;
-                grid.controller = new AbortController();
-                url.searchParams.set("_", String(Date.now()));
-
-                if (grid.loadingDelay !== null) {
-                    (function () {
-                        var loader = "<td colspan=\"" + grid.columns.length + "\"><div class=\"mvc-grid-loader\"><div class=\"mvc-grid-spinner\"></div></div></td>";
-
-                        clearTimeout(grid.loadingTimerId);
-
-                        grid.loadingTimerId = setTimeout(function () {
-                            var _iteratorNormalCompletion4 = true;
-                            var _didIteratorError4 = false;
-                            var _iteratorError4 = undefined;
-
-                            try {
-                                for (var _iterator4 = grid.element.querySelectorAll("tbody > tr")[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                                    var row = _step4.value;
-
-                                    row.innerHTML = loader;
-                                }
-                            } catch (err) {
-                                _didIteratorError4 = true;
-                                _iteratorError4 = err;
-                            } finally {
-                                try {
-                                    if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                                        _iterator4.return();
-                                    }
-                                } finally {
-                                    if (_didIteratorError4) {
-                                        throw _iteratorError4;
-                                    }
-                                }
-                            }
-                        }, grid.loadingDelay);
-                    })();
-                }
-
-                MvcGridPopup.hide();
-
-                fetch(url.href, {
-                    signal: grid.controller.signal,
-                    headers: { "X-Requested-With": "XMLHttpRequest" }
-                }).then(function (response) {
-                    if (!response.ok) {
-                        throw new Error("Invalid response status: " + response.status);
-                    }
-
-                    return response.text();
-                }).then(function (response) {
-                    var parent = grid.element.parentElement;
-                    var template = document.createElement("template");
-                    var i = Array.from(parent.children).indexOf(grid.element);
-
-                    template.innerHTML = response.trim();
-
-                    if (template.content.firstElementChild.classList.contains("mvc-grid")) {
-                        grid.element.outerHTML = response;
+                for (const tr of rows) {
+                    if (column.hidden) {
+                        tr.children[i].classList.add("mvc-grid-hidden");
                     } else {
-                        throw new Error("Grid partial should only include grid declaration.");
+                        tr.children[i].classList.remove("mvc-grid-hidden");
                     }
 
-                    var newGrid = new MvcGrid(parent.children[i], {
-                        loadingDelay: grid.loadingDelay,
-                        id: grid.element.dataset.id,
-                        filters: grid.filters,
-                        isAjax: grid.isAjax,
-                        url: grid.url
-                    });
-
-                    newGrid.element.dispatchEvent(new CustomEvent("reloadend", {
-                        detail: { grid: newGrid },
-                        bubbles: true
-                    }));
-                }).catch(function (reason) {
-                    if (reason.name === "AbortError") {
-                        return Promise.resolve();
+                    if (i !== index) {
+                        tr.insertBefore(tr.children[i], tr.children[index]);
                     }
+                }
 
-                    var cancelled = !grid.element.dispatchEvent(new CustomEvent("reloadfail", {
-                        detail: { grid: grid, reason: reason },
-                        cancelable: true,
-                        bubbles: true
-                    }));
+                this.columns.splice(i - (index < i ? 1 : 0), 0, this.columns.splice(index, 1)[0]);
+            }
+        });
+    }
 
-                    return cancelled ? Promise.resolve() : Promise.reject(reason);
+    reload() {
+        const grid = this;
+
+        grid.element.dispatchEvent(new CustomEvent("reloadstart", {
+            detail: { grid },
+            bubbles: true
+        }));
+
+        if (grid.isAjax) {
+            const url = new URL(grid.url.href);
+
+            grid.controller.abort();
+            MvcGridPopup.lastActiveElement = null;
+            grid.controller = new AbortController();
+            url.searchParams.set("_", String(Date.now()));
+
+            if (grid.loadingDelay !== null) {
+                const loader = `<td colspan="${grid.columns.length}"><div class="mvc-grid-loader"><div class="mvc-grid-spinner"></div></div></td>`;
+
+                clearTimeout(grid.loadingTimerId);
+
+                grid.loadingTimerId = setTimeout(() => {
+                    for (const row of grid.element.querySelectorAll("tbody > tr")) {
+                        row.innerHTML = loader;
+                    }
+                }, grid.loadingDelay);
+            }
+
+            MvcGridPopup.hide();
+
+            fetch(url.href, {
+                signal: grid.controller.signal,
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Invalid response status: ${response.status}`);
+                }
+
+                return response.text();
+            }).then(response => {
+                const parent = grid.element.parentElement;
+                const template = document.createElement("template");
+                const i = Array.from(parent.children).indexOf(grid.element);
+
+                template.innerHTML = response.trim();
+
+                if (template.content.firstElementChild.classList.contains("mvc-grid")) {
+                    grid.element.outerHTML = response;
+                } else {
+                    throw new Error("Grid partial should only include grid declaration.");
+                }
+
+                const newGrid = new MvcGrid(parent.children[i], {
+                    loadingDelay: grid.loadingDelay,
+                    id: grid.element.dataset.id,
+                    filters: grid.filters,
+                    isAjax: grid.isAjax,
+                    url: grid.url
                 });
-            } else {
-                location.href = grid.url.href;
-            }
-        }
-    }, {
-        key: "buildSort",
-        value: function buildSort() {
-            var map = new Map();
-            var definitions = /(^|,)(.*?) (asc|desc)(?=$|,)/g;
-            var sort = this.url.searchParams.get(this.prefix + "sort") || "";
 
-            var match = definitions.exec(sort);
-
-            while (match) {
-                map.set(match[2], match[3]);
-
-                match = definitions.exec(sort);
-            }
-
-            return map;
-        }
-    }, {
-        key: "findGrid",
-        value: function findGrid(element) {
-            var grid = element.closest(".mvc-grid");
-
-            if (!grid) {
-                throw new Error("Grid can only be created from within mvc-grid structure.");
-            }
-
-            return grid;
-        }
-    }, {
-        key: "cleanUp",
-        value: function cleanUp() {
-            delete this.element.dataset.filterMode;
-            delete this.element.dataset.url;
-        }
-    }, {
-        key: "bind",
-        value: function bind() {
-            var grid = this;
-
-            var _iteratorNormalCompletion5 = true;
-            var _didIteratorError5 = false;
-            var _iteratorError5 = undefined;
-
-            try {
-                var _loop = function _loop() {
-                    var row = _step5.value;
-
-                    if (!row.classList.contains("mvc-grid-empty-row")) {
-                        row.addEventListener("click", function (e) {
-                            var data = {};
-
-                            var _iteratorNormalCompletion6 = true;
-                            var _didIteratorError6 = false;
-                            var _iteratorError6 = undefined;
-
-                            try {
-                                for (var _iterator6 = grid.columns.entries()[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-                                    var _step6$value = _slicedToArray(_step6.value, 2);
-
-                                    var i = _step6$value[0];
-                                    var column = _step6$value[1];
-
-                                    if (row.cells.length <= i) {
-                                        return;
-                                    }
-
-                                    data[column.name] = row.cells[i].innerText;
-                                }
-                            } catch (err) {
-                                _didIteratorError6 = true;
-                                _iteratorError6 = err;
-                            } finally {
-                                try {
-                                    if (!_iteratorNormalCompletion6 && _iterator6.return) {
-                                        _iterator6.return();
-                                    }
-                                } finally {
-                                    if (_didIteratorError6) {
-                                        throw _iteratorError6;
-                                    }
-                                }
-                            }
-
-                            this.dispatchEvent(new CustomEvent("rowclick", {
-                                detail: { grid: grid, data: data, originalEvent: e },
-                                bubbles: true
-                            }));
-                        });
-                    }
-                };
-
-                for (var _iterator5 = grid.element.querySelectorAll("tbody > tr")[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-                    _loop();
+                newGrid.element.dispatchEvent(new CustomEvent("reloadend", {
+                    detail: { grid: newGrid },
+                    bubbles: true
+                }));
+            }).catch(reason => {
+                if (reason.name === "AbortError") {
+                    return Promise.resolve();
                 }
-            } catch (err) {
-                _didIteratorError5 = true;
-                _iteratorError5 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion5 && _iterator5.return) {
-                        _iterator5.return();
+
+                const cancelled = !grid.element.dispatchEvent(new CustomEvent("reloadfail", {
+                    detail: { grid, reason },
+                    cancelable: true,
+                    bubbles: true
+                }));
+
+                return cancelled ? Promise.resolve() : Promise.reject(reason);
+            });
+        } else {
+            location.href = grid.url.href;
+        }
+    }
+
+    buildSort() {
+        const map = new Map();
+        const definitions = /(^|,)(.*?) (asc|desc)(?=$|,)/g;
+        const sort = this.url.searchParams.get(`${this.prefix}sort`) || "";
+
+        let match = definitions.exec(sort);
+
+        while (match) {
+            map.set(match[2], match[3]);
+
+            match = definitions.exec(sort);
+        }
+
+        return map;
+    }
+    findGrid(element) {
+        const grid = element.closest(".mvc-grid");
+
+        if (!grid) {
+            throw new Error("Grid can only be created from within mvc-grid structure.");
+        }
+
+        return grid;
+    }
+    cleanUp() {
+        delete this.element.dataset.filterMode;
+        delete this.element.dataset.url;
+    }
+    bind() {
+        const grid = this;
+
+        for (const row of grid.element.querySelectorAll("tbody > tr")) {
+            if (!row.classList.contains("mvc-grid-empty-row")) {
+                row.addEventListener("click", function (e) {
+                    const data = {};
+
+                    for (const [i, column] of grid.columns.entries()) {
+                        if (row.cells.length <= i) {
+                            return;
+                        }
+
+                        data[column.name] = row.cells[i].innerText;
                     }
-                } finally {
-                    if (_didIteratorError5) {
-                        throw _iteratorError5;
-                    }
-                }
+
+                    this.dispatchEvent(new CustomEvent("rowclick", {
+                        detail: { grid: grid, data: data, originalEvent: e },
+                        bubbles: true
+                    }));
+                });
             }
         }
-    }]);
-
-    return MvcGrid;
-}();
+    }
+}
 
 MvcGrid.instances = [];
 MvcGrid.lang = {
@@ -480,12 +294,10 @@ MvcGrid.lang = {
     }
 };
 
-var MvcGridColumn = function () {
-    function MvcGridColumn(grid, header, rowFilter) {
-        _classCallCheck(this, MvcGridColumn);
-
-        var column = this;
-        var data = header.dataset;
+class MvcGridColumn {
+    constructor(grid, header, rowFilter) {
+        const column = this;
+        const data = header.dataset;
 
         column.grid = grid;
         column.header = header;
@@ -496,32 +308,24 @@ var MvcGridColumn = function () {
 
         column.cleanUp();
     }
+    cleanUp() {
+        const data = this.header.dataset;
 
-    _createClass(MvcGridColumn, [{
-        key: "cleanUp",
-        value: function cleanUp() {
-            var data = this.header.dataset;
+        delete data.filterDefaultMethod;
+        delete data.filterApplied;
+        delete data.filterType;
+        delete data.filter;
 
-            delete data.filterDefaultMethod;
-            delete data.filterApplied;
-            delete data.filterType;
-            delete data.filter;
+        delete data.sortFirst;
+        delete data.sort;
 
-            delete data.sortFirst;
-            delete data.sort;
+        delete data.name;
+    }
+}
 
-            delete data.name;
-        }
-    }]);
-
-    return MvcGridColumn;
-}();
-
-var MvcGridColumnSort = function () {
-    function MvcGridColumnSort(column) {
-        _classCallCheck(this, MvcGridColumnSort);
-
-        var sort = this;
+class MvcGridColumnSort {
+    constructor(column) {
+        const sort = this;
 
         sort.column = column;
         sort.button = column.header.querySelector(".mvc-grid-sort");
@@ -531,78 +335,67 @@ var MvcGridColumnSort = function () {
         sort.bind();
     }
 
-    _createClass(MvcGridColumnSort, [{
-        key: "toggle",
-        value: function toggle(multi) {
-            var sort = this;
-            var grid = sort.column.grid;
-            var map = sort.column.grid.sort;
-            var query = grid.url.searchParams;
+    toggle(multi) {
+        const sort = this;
+        const grid = sort.column.grid;
+        const map = sort.column.grid.sort;
+        const query = grid.url.searchParams;
 
-            if (sort.order === sort.first) {
-                sort.order = sort.order === "asc" ? "desc" : "asc";
-            } else if (sort.order) {
-                sort.order = "";
-            } else {
-                sort.order = sort.first;
-            }
-
-            if (!multi) {
-                map.clear();
-            }
-
-            if (sort.order) {
-                map.set(sort.column.name, sort.order);
-            } else {
-                map.delete(sort.column.name);
-            }
-
-            var order = Array.from(map).map(function (value) {
-                return value.join(" ");
-            }).join(",");
-
-            query.delete(grid.prefix + "sort");
-
-            if (order) {
-                query.set(grid.prefix + "sort", order);
-            }
-
-            grid.reload();
+        if (sort.order === sort.first) {
+            sort.order = sort.order === "asc" ? "desc" : "asc";
+        } else if (sort.order) {
+            sort.order = "";
+        } else {
+            sort.order = sort.first;
         }
-    }, {
-        key: "bind",
-        value: function bind() {
-            var sort = this;
-            var column = sort.column;
 
-            column.header.addEventListener("click", function (e) {
-                if (!column.filter || column.grid.filterMode !== "header") {
-                    if (!/mvc-grid-(sort|filter)/.test(e.target.className)) {
-                        sort.toggle(e.ctrlKey || e.shiftKey);
-                    }
+        if (!multi) {
+            map.clear();
+        }
+
+        if (sort.order) {
+            map.set(sort.column.name, sort.order);
+        } else {
+            map.delete(sort.column.name);
+        }
+
+        const order = Array.from(map).map(value => value.join(" ")).join(",");
+
+        query.delete(`${grid.prefix}sort`);
+
+        if (order) {
+            query.set(`${grid.prefix}sort`, order);
+        }
+
+        grid.reload();
+    }
+    bind() {
+        const sort = this;
+        const column = sort.column;
+
+        column.header.addEventListener("click", e => {
+            if (!column.filter || column.grid.filterMode !== "header") {
+                if (!/mvc-grid-(sort|filter)/.test(e.target.className)) {
+                    sort.toggle(e.ctrlKey || e.shiftKey);
                 }
-            });
+            }
+        });
 
-            sort.button.addEventListener("click", function (e) {
-                sort.toggle(e.ctrlKey || e.shiftKey);
-            });
-        }
-    }]);
+        sort.button.addEventListener("click", e => {
+            sort.toggle(e.ctrlKey || e.shiftKey);
+        });
+    }
+}
 
-    return MvcGridColumnSort;
-}();
-
-var MvcGridColumnFilter = function () {
-    function MvcGridColumnFilter(column, rowFilter) {
-        _classCallCheck(this, MvcGridColumnFilter);
-
-        var values = [];
-        var methods = [];
-        var filter = this;
-        var data = column.header.dataset;
-        var query = column.grid.url.searchParams;
-        var name = column.grid.prefix + column.name + "-";
-        var options = column.header.querySelector(".mvc-grid-options");
+class MvcGridColumnFilter {
+    constructor(column, rowFilter) {
+        const values = [];
+        const methods = [];
+        const filter = this;
+        const data = column.header.dataset;
+        const query = column.grid.url.searchParams;
+        const name = `${column.grid.prefix + column.name}-`;
+        let options = column.header.querySelector(".mvc-grid-options");
 
         if (column.grid.filterMode === "row") {
             options = rowFilter.querySelector("select");
@@ -612,31 +405,10 @@ var MvcGridColumnFilter = function () {
             options.parentElement.removeChild(options);
         }
 
-        var _iteratorNormalCompletion7 = true;
-        var _didIteratorError7 = false;
-        var _iteratorError7 = undefined;
-
-        try {
-            for (var _iterator7 = query.entries()[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-                var parameter = _step7.value;
-
-                if (parameter[0] !== name + "op" && parameter[0].startsWith(name)) {
-                    methods.push(parameter[0].substring(name.length));
-                    values.push(parameter[1]);
-                }
-            }
-        } catch (err) {
-            _didIteratorError7 = true;
-            _iteratorError7 = err;
-        } finally {
-            try {
-                if (!_iteratorNormalCompletion7 && _iterator7.return) {
-                    _iterator7.return();
-                }
-            } finally {
-                if (_didIteratorError7) {
-                    throw _iteratorError7;
-                }
+        for (const parameter of query.entries()) {
+            if (parameter[0] !== `${name}op` && parameter[0].startsWith(name)) {
+                methods.push(parameter[0].substring(name.length));
+                values.push(parameter[1]);
             }
         }
 
@@ -655,7 +427,7 @@ var MvcGridColumnFilter = function () {
             values: filter.type === "multi" ? values : values.slice(0, 1)
         };
 
-        filter.operator = filter.type === "double" ? query.get(name + "op") || "" : "";
+        filter.operator = filter.type === "double" ? query.get(`${name}op`) || "" : "";
 
         filter.second = {
             method: filter.type === "double" ? methods[1] || "" : "",
@@ -665,180 +437,118 @@ var MvcGridColumnFilter = function () {
         this.bind();
     }
 
-    _createClass(MvcGridColumnFilter, [{
-        key: "apply",
-        value: function apply() {
-            var _this2 = this;
+    apply() {
+        const grid = this.column.grid;
+        const query = grid.url.searchParams;
+        const prefix = this.column.grid.prefix;
+        const order = query.get(`${prefix}sort`);
 
-            var grid = this.column.grid;
-            var query = grid.url.searchParams;
-            var prefix = this.column.grid.prefix;
-            var order = query.get(prefix + "sort");
-
-            var _iteratorNormalCompletion8 = true;
-            var _didIteratorError8 = false;
-            var _iteratorError8 = undefined;
-
-            try {
-                for (var _iterator8 = grid.columns[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-                    var column = _step8.value;
-
-                    var _arr2 = [].concat(_toConsumableArray(query.keys()));
-
-                    for (var _i2 = 0; _i2 < _arr2.length; _i2++) {
-                        var key = _arr2[_i2];
-                        if (key.startsWith(prefix + column.name + "-")) {
-                            query.delete(key);
-                        }
-                    }
-                }
-            } catch (err) {
-                _didIteratorError8 = true;
-                _iteratorError8 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion8 && _iterator8.return) {
-                        _iterator8.return();
-                    }
-                } finally {
-                    if (_didIteratorError8) {
-                        throw _iteratorError8;
-                    }
+        for (const column of grid.columns) {
+            for (const key of [...query.keys()]) {
+                if (key.startsWith(`${prefix + column.name}-`)) {
+                    query.delete(key);
                 }
             }
+        }
 
-            query.delete(prefix + "sort");
-            query.delete(prefix + "page");
-            query.delete(prefix + "rows");
+        query.delete(`${prefix}sort`);
+        query.delete(`${prefix}page`);
+        query.delete(`${prefix}rows`);
 
-            var _iteratorNormalCompletion9 = true;
-            var _didIteratorError9 = false;
-            var _iteratorError9 = undefined;
+        for (const column of grid.columns.filter(col => col.filter && (col === this.column || col.filter.isApplied || col.filter.first.values[0]))) {
+            const filter = column.filter;
 
-            try {
-                for (var _iterator9 = grid.columns.filter(function (col) {
-                    return col.filter && (col === _this2.column || col.filter.isApplied || col.filter.first.values[0]);
-                })[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-                    var _column = _step9.value;
+            query.set(`${prefix + column.name}-${filter.first.method}`, filter.first.values[0] || "");
 
-                    var filter = _column.filter;
-
-                    query.set(prefix + _column.name + "-" + filter.first.method, filter.first.values[0] || "");
-
-                    for (var i = 1; filter.type === "multi" && i < filter.first.values.length; i++) {
-                        query.append(prefix + _column.name + "-" + filter.first.method, filter.first.values[i] || "");
-                    }
-
-                    if (grid.filterMode === "excel" && filter.type === "double") {
-                        query.set(prefix + _column.name + "-op", filter.operator || "");
-                        query.append(prefix + _column.name + "-" + filter.second.method, filter.second.values[0] || "");
-                    }
-                }
-            } catch (err) {
-                _didIteratorError9 = true;
-                _iteratorError9 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion9 && _iterator9.return) {
-                        _iterator9.return();
-                    }
-                } finally {
-                    if (_didIteratorError9) {
-                        throw _iteratorError9;
-                    }
-                }
+            for (let i = 1; filter.type === "multi" && i < filter.first.values.length; i++) {
+                query.append(`${prefix + column.name}-${filter.first.method}`, filter.first.values[i] || "");
             }
 
-            if (order) {
-                query.set(prefix + "sort", order);
+            if (grid.filterMode === "excel" && filter.type === "double") {
+                query.set(`${prefix + column.name}-op`, filter.operator || "");
+                query.append(`${prefix + column.name}-${filter.second.method}`, filter.second.values[0] || "");
             }
+        }
 
-            if (grid.pager && grid.pager.showPageSizes) {
-                query.set(prefix + "rows", grid.pager.rowsPerPage.value);
+        if (order) {
+            query.set(`${prefix}sort`, order);
+        }
+
+        if (grid.pager && grid.pager.showPageSizes) {
+            query.set(`${prefix}rows`, grid.pager.rowsPerPage.value);
+        }
+
+        grid.reload();
+    }
+    cancel() {
+        const filter = this;
+        const column = filter.column;
+        const grid = filter.column.grid;
+        const query = grid.url.searchParams;
+
+        if (filter.isApplied) {
+            query.delete(`${grid.prefix}page`);
+            query.delete(`${grid.prefix}rows`);
+
+            for (const key of [...query.keys()]) {
+                if (key.startsWith(`${grid.prefix + column.name}-`)) {
+                    query.delete(key);
+                }
             }
 
             grid.reload();
-        }
-    }, {
-        key: "cancel",
-        value: function cancel() {
-            var filter = this;
-            var column = filter.column;
-            var grid = filter.column.grid;
-            var query = grid.url.searchParams;
+        } else {
+            filter.first.values = [];
+            filter.second.values = [];
 
-            if (filter.isApplied) {
-                query.delete(grid.prefix + "page");
-                query.delete(grid.prefix + "rows");
-
-                var _arr3 = [].concat(_toConsumableArray(query.keys()));
-
-                for (var _i3 = 0; _i3 < _arr3.length; _i3++) {
-                    var key = _arr3[_i3];
-                    if (key.startsWith(grid.prefix + column.name + "-")) {
-                        query.delete(key);
-                    }
-                }
-
-                grid.reload();
-            } else {
-                filter.first.values = [];
-                filter.second.values = [];
-
-                if (column.grid.filterMode !== "excel") {
-                    filter.inlineInput.value = "";
-                }
-
-                MvcGridPopup.hide();
+            if (column.grid.filterMode !== "excel") {
+                filter.inlineInput.value = "";
             }
-        }
-    }, {
-        key: "bind",
-        value: function bind() {
-            var filter = this;
-            var column = filter.column;
-            var mode = column.grid.filterMode;
 
-            filter.button.addEventListener("click", function () {
-                MvcGridPopup.show(filter);
+            MvcGridPopup.hide();
+        }
+    }
+
+    bind() {
+        const filter = this;
+        const column = filter.column;
+        const mode = column.grid.filterMode;
+
+        filter.button.addEventListener("click", () => {
+            MvcGridPopup.show(filter);
+        });
+
+        if (filter.options) {
+            if (mode === "row" && filter.type !== "multi") {
+                filter.inlineInput.addEventListener("change", function () {
+                    filter.first.values = [this.value];
+                    column.filter.apply();
+                });
+            } else if (mode === "header" || mode === "row") {
+                filter.inlineInput.addEventListener("click", function () {
+                    if (this.selectionStart === this.selectionEnd) {
+                        MvcGridPopup.show(filter);
+                    }
+                });
+            }
+        } else if (mode !== "excel") {
+            filter.inlineInput.addEventListener("input", function () {
+                filter.first.values = [this.value];
+                filter.instance.validate(this);
             });
 
-            if (filter.options) {
-                if (mode === "row" && filter.type !== "multi") {
-                    filter.inlineInput.addEventListener("change", function () {
-                        filter.first.values = [this.value];
-                        column.filter.apply();
-                    });
-                } else if (mode === "header" || mode === "row") {
-                    filter.inlineInput.addEventListener("click", function () {
-                        if (this.selectionStart === this.selectionEnd) {
-                            MvcGridPopup.show(filter);
-                        }
-                    });
+            filter.inlineInput.addEventListener("keyup", function (e) {
+                if (e.which === 13 && filter.instance.isValid(this.value)) {
+                    column.filter.apply();
                 }
-            } else if (mode !== "excel") {
-                filter.inlineInput.addEventListener("input", function () {
-                    filter.first.values = [this.value];
-                    filter.instance.validate(this);
-                });
-
-                filter.inlineInput.addEventListener("keyup", function (e) {
-                    if (e.which === 13 && filter.instance.isValid(this.value)) {
-                        column.filter.apply();
-                    }
-                });
-            }
+            });
         }
-    }]);
+    }
+}
 
-    return MvcGridColumnFilter;
-}();
-
-var MvcGridPager = function () {
-    function MvcGridPager(grid, element) {
-        _classCallCheck(this, MvcGridPager);
-
-        var pager = this;
+class MvcGridPager {
+    constructor(grid, element) {
+        const pager = this;
 
         pager.grid = grid;
         pager.element = element;
@@ -852,423 +562,277 @@ var MvcGridPager = function () {
         pager.bind();
     }
 
-    _createClass(MvcGridPager, [{
-        key: "apply",
-        value: function apply(page, rows) {
-            var grid = this.grid;
-            var query = grid.url.searchParams;
+    apply(page, rows) {
+        const grid = this.grid;
+        const query = grid.url.searchParams;
 
-            query.delete(grid.prefix + "page");
-            query.delete(grid.prefix + "rows");
+        query.delete(`${grid.prefix}page`);
+        query.delete(`${grid.prefix}rows`);
 
-            query.set(grid.prefix + "page", page);
+        query.set(`${grid.prefix}page`, page);
 
-            if (this.showPageSizes) {
-                query.set(grid.prefix + "rows", typeof rows === "string" ? rows : this.rowsPerPage.value);
-            }
-
-            grid.reload();
+        if (this.showPageSizes) {
+            query.set(`${grid.prefix}rows`, typeof rows === "string" ? rows : this.rowsPerPage.value);
         }
-    }, {
-        key: "cleanUp",
-        value: function cleanUp() {
-            delete this.element.dataset.showPageSizes;
-            delete this.element.dataset.totalPages;
-            delete this.element.dataset.totalRows;
-        }
-    }, {
-        key: "bind",
-        value: function bind() {
-            var pager = this;
 
-            var _iteratorNormalCompletion10 = true;
-            var _didIteratorError10 = false;
-            var _iteratorError10 = undefined;
-
-            try {
-                for (var _iterator10 = pager.pages[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-                    var page = _step10.value;
-
-                    page.addEventListener("click", function () {
-                        pager.apply(this.dataset.page);
-                    });
-                }
-            } catch (err) {
-                _didIteratorError10 = true;
-                _iteratorError10 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion10 && _iterator10.return) {
-                        _iterator10.return();
-                    }
-                } finally {
-                    if (_didIteratorError10) {
-                        throw _iteratorError10;
-                    }
-                }
-            }
-
-            pager.grid.element.querySelectorAll(".mvc-grid-pager-rows").forEach(function (rowsPerPage) {
-                rowsPerPage.addEventListener("change", function () {
-                    var rows = parseInt(this.value);
-
-                    if (!isNaN(rows) && rows >= 0) {
-                        var totalPages = rows === 0 ? 1 : Math.ceil(pager.totalRows / rows);
-
-                        pager.apply(Math.min(pager.currentPage, totalPages).toString(), rows.toString());
-                    }
-                });
-            });
-        }
-    }]);
-
-    return MvcGridPager;
-}();
-
-var MvcGridPopup = function () {
-    function MvcGridPopup() {
-        _classCallCheck(this, MvcGridPopup);
+        grid.reload();
     }
 
-    _createClass(MvcGridPopup, null, [{
-        key: "showConfiguration",
-        value: function showConfiguration(grid, anchor) {
-            var popup = this;
+    cleanUp() {
+        delete this.element.dataset.showPageSizes;
+        delete this.element.dataset.totalPages;
+        delete this.element.dataset.totalRows;
+    }
+    bind() {
+        const pager = this;
 
-            popup.lastActiveElement = document.activeElement;
-            popup.element.className = "mvc-grid-popup mvc-grid-configuration";
-            popup.element.innerHTML = "<div class=\"popup-arrow\"></div><div class=\"popup-content\"></div>";
+        for (const page of pager.pages) {
+            page.addEventListener("click", function () {
+                pager.apply(this.dataset.page);
+            });
+        }
 
-            var content = popup.element.querySelector(".popup-content");
+        pager.grid.element.querySelectorAll(".mvc-grid-pager-rows").forEach(rowsPerPage => {
+            rowsPerPage.addEventListener("change", function () {
+                const rows = parseInt(this.value);
 
+                if (!isNaN(rows) && rows >= 0) {
+                    const totalPages = rows === 0 ? 1 : Math.ceil(pager.totalRows / rows);
+
+                    pager.apply(Math.min(pager.currentPage, totalPages).toString(), rows.toString());
+                }
+            });
+        });
+    }
+}
+
+class MvcGridPopup {
+    static showConfiguration(grid, anchor) {
+        const popup = this;
+
+        popup.lastActiveElement = document.activeElement;
+        popup.element.className = "mvc-grid-popup mvc-grid-configuration";
+        popup.element.innerHTML = `<div class="popup-arrow"></div><div class="popup-content"></div>`;
+
+        const content = popup.element.querySelector(".popup-content");
+
+        content.appendChild(popup.createDropzone());
+
+        for (const column of grid.columns) {
+            content.appendChild(popup.createPreference(column));
             content.appendChild(popup.createDropzone());
-
-            var _iteratorNormalCompletion11 = true;
-            var _didIteratorError11 = false;
-            var _iteratorError11 = undefined;
-
-            try {
-                for (var _iterator11 = grid.columns[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
-                    var column = _step11.value;
-
-                    content.appendChild(popup.createPreference(column));
-                    content.appendChild(popup.createDropzone());
-                }
-            } catch (err) {
-                _didIteratorError11 = true;
-                _iteratorError11 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion11 && _iterator11.return) {
-                        _iterator11.return();
-                    }
-                } finally {
-                    if (_didIteratorError11) {
-                        throw _iteratorError11;
-                    }
-                }
-            }
-
-            if (grid.columns.length) {
-                document.body.appendChild(popup.element);
-            }
-
-            popup.reposition(grid, anchor);
-            popup.bind();
         }
-    }, {
-        key: "show",
-        value: function show(filter) {
-            if (!filter.instance) {
-                return;
-            }
 
-            var popup = this;
-            var filterer = filter.instance;
-
-            popup.lastActiveElement = document.activeElement;
-            popup.element.className = ("mvc-grid-popup " + filterer.cssClasses).trim();
-            popup.element.innerHTML = "<div class=\"popup-arrow\"></div><div class=\"popup-content\">" + filterer.render() + "</div>";
-
+        if (grid.columns.length) {
             document.body.appendChild(popup.element);
-
-            popup.bind();
-            popup.setValues(filter);
-            popup.reposition(filter.column.grid, filter.button);
-
-            filterer.bindOperator();
-            filterer.bindMethods();
-            filterer.bindValues();
-            filterer.bindActions();
-
-            popup.element.querySelector(".mvc-grid-value").focus();
         }
-    }, {
-        key: "hide",
-        value: function hide(e) {
-            var popup = MvcGridPopup;
-            var initiator = e && e.target;
-            var visible = popup.element.parentNode;
-            var outside = !(initiator && initiator.closest(".mvc-grid-popup,.mvc-grid-filter"));
 
-            if (visible && outside) {
-                document.body.removeChild(popup.element);
+        popup.reposition(grid, anchor);
+        popup.bind();
+    }
+    static show(filter) {
+        if (!filter.instance) {
+            return;
+        }
 
-                if (popup.lastActiveElement) {
-                    popup.lastActiveElement.focus();
-                    popup.lastActiveElement = null;
-                }
+        const popup = this;
+        const filterer = filter.instance;
+
+        popup.lastActiveElement = document.activeElement;
+        popup.element.className = `mvc-grid-popup ${filterer.cssClasses}`.trim();
+        popup.element.innerHTML = `<div class="popup-arrow"></div><div class="popup-content">${filterer.render()}</div>`;
+
+        document.body.appendChild(popup.element);
+
+        popup.bind();
+        popup.setValues(filter);
+        popup.reposition(filter.column.grid, filter.button);
+
+        filterer.bindOperator();
+        filterer.bindMethods();
+        filterer.bindValues();
+        filterer.bindActions();
+
+        popup.element.querySelector(".mvc-grid-value").focus();
+    }
+    static hide(e) {
+        const popup = MvcGridPopup;
+        const initiator = e && e.target;
+        const visible = popup.element.parentNode;
+        const outside = !(initiator && initiator.closest(".mvc-grid-popup,.mvc-grid-filter"));
+
+        if (visible && outside) {
+            document.body.removeChild(popup.element);
+
+            if (popup.lastActiveElement) {
+                popup.lastActiveElement.focus();
+                popup.lastActiveElement = null;
             }
         }
-    }, {
-        key: "setValues",
-        value: function setValues(filter) {
-            var popup = this;
+    }
 
-            popup.setValue(".mvc-grid-operator", [filter.operator]);
-            popup.setValue(".mvc-grid-value[data-filter=\"first\"]", filter.first.values);
-            popup.setValue(".mvc-grid-value[data-filter=\"second\"]", filter.second.values);
-            popup.setValue(".mvc-grid-method[data-filter=\"first\"]", [filter.first.method]);
-            popup.setValue(".mvc-grid-method[data-filter=\"second\"]", [filter.second.method]);
-        }
-    }, {
-        key: "setValue",
-        value: function setValue(selector, values) {
-            var input = this.element.querySelector(selector);
+    static setValues(filter) {
+        const popup = this;
 
-            if (input) {
-                if (input.tagName === "SELECT" && input.multiple) {
-                    var _iteratorNormalCompletion12 = true;
-                    var _didIteratorError12 = false;
-                    var _iteratorError12 = undefined;
+        popup.setValue(`.mvc-grid-operator`, [filter.operator]);
+        popup.setValue(`.mvc-grid-value[data-filter="first"]`, filter.first.values);
+        popup.setValue(`.mvc-grid-value[data-filter="second"]`, filter.second.values);
+        popup.setValue(`.mvc-grid-method[data-filter="first"]`, [filter.first.method]);
+        popup.setValue(`.mvc-grid-method[data-filter="second"]`, [filter.second.method]);
+    }
+    static setValue(selector, values) {
+        const input = this.element.querySelector(selector);
 
-                    try {
-                        for (var _iterator12 = Array.from(input.options)[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
-                            var option = _step12.value;
-
-                            option.selected = values.indexOf(option.value) >= 0;
-                        }
-                    } catch (err) {
-                        _didIteratorError12 = true;
-                        _iteratorError12 = err;
-                    } finally {
-                        try {
-                            if (!_iteratorNormalCompletion12 && _iterator12.return) {
-                                _iterator12.return();
-                            }
-                        } finally {
-                            if (_didIteratorError12) {
-                                throw _iteratorError12;
-                            }
-                        }
-                    }
-                } else {
-                    input.value = values[0] || "";
+        if (input) {
+            if (input.tagName === "SELECT" && input.multiple) {
+                for (const option of Array.from(input.options)) {
+                    option.selected = values.indexOf(option.value) >= 0;
                 }
-            }
-        }
-    }, {
-        key: "createPreference",
-        value: function createPreference(column) {
-            var popup = this;
-            var name = document.createElement("span");
-            var checkbox = document.createElement("input");
-            var preference = document.createElement("label");
-
-            checkbox.type = "checkbox";
-            preference.draggable = true;
-            preference.className = "mvc-grid-column";
-
-            if (column.filter && column.filter.inlineInput) {
-                name.innerText = column.filter.inlineInput.placeholder;
             } else {
-                name.innerText = column.header.innerText.trim();
+                input.value = values[0] || "";
+            }
+        }
+    }
+    static createPreference(column) {
+        const popup = this;
+        const name = document.createElement("span");
+        const checkbox = document.createElement("input");
+        const preference = document.createElement("label");
+
+        checkbox.type = "checkbox";
+        preference.draggable = true;
+        preference.className = "mvc-grid-column";
+
+        if (column.filter && column.filter.inlineInput) {
+            name.innerText = column.filter.inlineInput.placeholder;
+        } else {
+            name.innerText = column.header.innerText.trim();
+        }
+
+        checkbox.checked = !column.isHidden;
+
+        checkbox.addEventListener("change", () => {
+            const i = column.grid.columns.indexOf(column);
+
+            for (const tr of column.grid.element.querySelectorAll("tr")) {
+                if (checkbox.checked) {
+                    tr.children[i].classList.remove("mvc-grid-hidden");
+                } else {
+                    tr.children[i].classList.add("mvc-grid-hidden");
+                }
             }
 
-            checkbox.checked = !column.isHidden;
+            column.isHidden = !checkbox.checked;
 
-            checkbox.addEventListener("change", function () {
-                var i = column.grid.columns.indexOf(column);
+            column.grid.element.dispatchEvent(new CustomEvent("gridconfigure", {
+                detail: { grid: column.grid },
+                bubbles: true
+            }));
+        });
 
-                var _iteratorNormalCompletion13 = true;
-                var _didIteratorError13 = false;
-                var _iteratorError13 = undefined;
+        preference.addEventListener("dragstart", () => {
+            popup.draggedColumn = column;
+            popup.draggedElement = preference;
+            preference.style.opacity = "0.4";
+            preference.parentElement.classList.add("mvc-grid-dragging");
+        });
 
-                try {
-                    for (var _iterator13 = column.grid.element.querySelectorAll("tr")[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
-                        var tr = _step13.value;
+        preference.addEventListener("dragend", () => {
+            popup.draggedColumn = null;
+            popup.draggedElement = null;
+            preference.style.opacity = "";
+            preference.parentElement.classList.remove("mvc-grid-dragging");
+        });
 
-                        if (checkbox.checked) {
-                            tr.children[i].classList.remove("mvc-grid-hidden");
-                        } else {
-                            tr.children[i].classList.add("mvc-grid-hidden");
-                        }
-                    }
-                } catch (err) {
-                    _didIteratorError13 = true;
-                    _iteratorError13 = err;
-                } finally {
-                    try {
-                        if (!_iteratorNormalCompletion13 && _iterator13.return) {
-                            _iterator13.return();
-                        }
-                    } finally {
-                        if (_didIteratorError13) {
-                            throw _iteratorError13;
-                        }
-                    }
+        preference.appendChild(checkbox);
+        preference.appendChild(name);
+
+        return preference;
+    }
+    static createDropzone() {
+        const dropzone = document.createElement("div");
+
+        dropzone.className = "mvc-grid-dropzone";
+
+        dropzone.addEventListener("dragenter", () => {
+            dropzone.classList.add("hover");
+        });
+
+        dropzone.addEventListener("dragover", e => {
+            e.preventDefault();
+        });
+
+        dropzone.addEventListener("dragleave", () => {
+            dropzone.classList.remove("hover");
+        });
+
+        dropzone.addEventListener("drop", () => {
+            const popup = this;
+            const dragged = popup.draggedElement;
+            const grid = popup.draggedColumn.grid;
+
+            if (dropzone !== dragged.previousElementSibling && dropzone !== dragged.nextElementSibling) {
+                const index = Array.from(popup.element.querySelectorAll(".mvc-grid-dropzone")).indexOf(dropzone);
+                const i = grid.columns.indexOf(popup.draggedColumn);
+
+                dropzone.parentElement.insertBefore(dragged.previousElementSibling, dropzone);
+                dropzone.parentElement.insertBefore(dragged, dropzone);
+
+                for (const tr of grid.element.querySelectorAll("tr")) {
+                    tr.insertBefore(tr.children[i], tr.children[index]);
                 }
 
-                column.isHidden = !checkbox.checked;
+                grid.columns.splice(index - (i < index ? 1 : 0), 0, grid.columns.splice(i, 1)[0]);
 
-                column.grid.element.dispatchEvent(new CustomEvent("gridconfigure", {
-                    detail: { grid: column.grid },
+                grid.element.dispatchEvent(new CustomEvent("gridconfigure", {
+                    detail: { grid },
                     bubbles: true
                 }));
-            });
-
-            preference.addEventListener("dragstart", function () {
-                popup.draggedColumn = column;
-                popup.draggedElement = preference;
-                preference.style.opacity = "0.4";
-                preference.parentElement.classList.add("mvc-grid-dragging");
-            });
-
-            preference.addEventListener("dragend", function () {
-                popup.draggedColumn = null;
-                popup.draggedElement = null;
-                preference.style.opacity = "";
-                preference.parentElement.classList.remove("mvc-grid-dragging");
-            });
-
-            preference.appendChild(checkbox);
-            preference.appendChild(name);
-
-            return preference;
-        }
-    }, {
-        key: "createDropzone",
-        value: function createDropzone() {
-            var _this3 = this;
-
-            var dropzone = document.createElement("div");
-
-            dropzone.className = "mvc-grid-dropzone";
-
-            dropzone.addEventListener("dragenter", function () {
-                dropzone.classList.add("hover");
-            });
-
-            dropzone.addEventListener("dragover", function (e) {
-                e.preventDefault();
-            });
-
-            dropzone.addEventListener("dragleave", function () {
-                dropzone.classList.remove("hover");
-            });
-
-            dropzone.addEventListener("drop", function () {
-                var popup = _this3;
-                var dragged = popup.draggedElement;
-                var grid = popup.draggedColumn.grid;
-
-                if (dropzone !== dragged.previousElementSibling && dropzone !== dragged.nextElementSibling) {
-                    var index = Array.from(popup.element.querySelectorAll(".mvc-grid-dropzone")).indexOf(dropzone);
-                    var i = grid.columns.indexOf(popup.draggedColumn);
-
-                    dropzone.parentElement.insertBefore(dragged.previousElementSibling, dropzone);
-                    dropzone.parentElement.insertBefore(dragged, dropzone);
-
-                    var _iteratorNormalCompletion14 = true;
-                    var _didIteratorError14 = false;
-                    var _iteratorError14 = undefined;
-
-                    try {
-                        for (var _iterator14 = grid.element.querySelectorAll("tr")[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
-                            var tr = _step14.value;
-
-                            tr.insertBefore(tr.children[i], tr.children[index]);
-                        }
-                    } catch (err) {
-                        _didIteratorError14 = true;
-                        _iteratorError14 = err;
-                    } finally {
-                        try {
-                            if (!_iteratorNormalCompletion14 && _iterator14.return) {
-                                _iterator14.return();
-                            }
-                        } finally {
-                            if (_didIteratorError14) {
-                                throw _iteratorError14;
-                            }
-                        }
-                    }
-
-                    grid.columns.splice(index - (i < index ? 1 : 0), 0, grid.columns.splice(i, 1)[0]);
-
-                    grid.element.dispatchEvent(new CustomEvent("gridconfigure", {
-                        detail: { grid: grid },
-                        bubbles: true
-                    }));
-                }
-
-                dropzone.classList.remove("hover");
-            });
-
-            return dropzone;
-        }
-    }, {
-        key: "reposition",
-        value: function reposition(grid, anchor) {
-            var element = this.element;
-            var style = getComputedStyle(element);
-            var arrow = element.querySelector(".popup-arrow");
-
-            var _getBoundingClientRec = (anchor || grid.element).getBoundingClientRect();
-
-            var top = _getBoundingClientRec.top;
-            var left = _getBoundingClientRec.left;
-
-
-            top += window.pageYOffset - parseFloat(style.borderTopWidth);
-            left += window.pageXOffset - parseFloat(style.borderLeftWidth);
-
-            if (anchor) {
-                left -= parseFloat(style.marginLeft) - anchor.offsetWidth / 2 + 26;
-
-                var arrowLeft = 26 - parseFloat(getComputedStyle(arrow).borderLeftWidth);
-                var width = parseFloat(style.marginLeft) + element.offsetWidth + parseFloat(style.marginRight);
-                var offset = Math.max(0, left + width - window.pageXOffset - document.documentElement.clientWidth);
-
-                top += anchor.offsetHeight / 3 * 2 + arrow.offsetHeight - parseFloat(style.marginTop);
-                arrow.style.left = Math.max(0, arrowLeft + offset) + "px";
-                left -= offset;
             }
 
-            element.style.left = Math.max(0, left) + "px";
-            element.style.top = Math.max(0, top) + "px";
-            arrow.style.display = anchor ? "" : "none";
-        }
-    }, {
-        key: "bind",
-        value: function bind() {
-            var popup = this;
+            dropzone.classList.remove("hover");
+        });
 
-            window.addEventListener("mousedown", popup.hide);
-            window.addEventListener("touchstart", popup.hide);
-        }
-    }]);
+        return dropzone;
+    }
+    static reposition(grid, anchor) {
+        const element = this.element;
+        const style = getComputedStyle(element);
+        const arrow = element.querySelector(".popup-arrow");
+        let { top, left } = (anchor || grid.element).getBoundingClientRect();
 
-    return MvcGridPopup;
-}();
+        top += window.pageYOffset - parseFloat(style.borderTopWidth);
+        left += window.pageXOffset - parseFloat(style.borderLeftWidth);
+
+        if (anchor) {
+            left -= parseFloat(style.marginLeft) - anchor.offsetWidth / 2 + 26;
+
+            const arrowLeft = 26 - parseFloat(getComputedStyle(arrow).borderLeftWidth);
+            const width = parseFloat(style.marginLeft) + element.offsetWidth + parseFloat(style.marginRight);
+            const offset = Math.max(0, left + width - window.pageXOffset - document.documentElement.clientWidth);
+
+            top += anchor.offsetHeight / 3 * 2 + arrow.offsetHeight - parseFloat(style.marginTop);
+            arrow.style.left = `${Math.max(0, arrowLeft + offset)}px`;
+            left -= offset;
+        }
+
+        element.style.left = `${Math.max(0, left)}px`;
+        element.style.top = `${Math.max(0, top)}px`;
+        arrow.style.display = anchor ? "" : "none";
+    }
+    static bind() {
+        const popup = this;
+
+        window.addEventListener("mousedown", popup.hide);
+        window.addEventListener("touchstart", popup.hide);
+    }
+}
 
 MvcGridPopup.element = document.createElement("div");
 
-var MvcGridFilter = function () {
-    function MvcGridFilter(column) {
-        _classCallCheck(this, MvcGridFilter);
-
-        var filter = this;
+class MvcGridFilter {
+    constructor(column) {
+        const filter = this;
 
         filter.column = column;
         filter.type = column.filter.type;
@@ -1277,291 +841,212 @@ var MvcGridFilter = function () {
         filter.cssClasses = "mvc-grid-default-filter";
     }
 
-    _createClass(MvcGridFilter, [{
-        key: "init",
-        value: function init() {
-            var filter = this;
-            var column = filter.column;
-            var columnFilter = column.filter;
+    init() {
+        const filter = this;
+        const column = filter.column;
+        const columnFilter = column.filter;
 
-            if (!columnFilter.options && filter.mode !== "excel") {
-                filter.validate(columnFilter.inlineInput);
-            }
-
-            if (!columnFilter.first.method) {
-                columnFilter.first.method = columnFilter.defaultMethod;
-            }
-
-            if (!columnFilter.second.method) {
-                columnFilter.second.method = columnFilter.defaultMethod;
-            }
-
-            if (filter.methods.indexOf(columnFilter.first.method) < 0) {
-                columnFilter.first.method = filter.methods[0];
-            }
-
-            if (filter.methods.indexOf(columnFilter.second.method) < 0) {
-                columnFilter.second.method = filter.methods[0];
-            }
+        if (!columnFilter.options && filter.mode !== "excel") {
+            filter.validate(columnFilter.inlineInput);
         }
-    }, {
-        key: "isValid",
-        value: function isValid(value) {
-            return !value || true;
-        }
-    }, {
-        key: "validate",
-        value: function validate(input) {
-            if (this.isValid(input.value)) {
-                input.classList.remove("invalid");
-            } else {
-                input.classList.add("invalid");
-            }
-        }
-    }, {
-        key: "render",
-        value: function render() {
-            var filter = this;
 
-            return "<div class=\"popup-filter\">\n                    " + filter.renderFilter("first") + "\n                </div>\n                " + (filter.mode === "excel" && filter.type === "double" ? filter.renderOperator() + "\n                    <div class=\"popup-filter\">\n                        " + filter.renderFilter("second") + "\n                    </div>" : "") + "\n                " + filter.renderActions();
+        if (!columnFilter.first.method) {
+            columnFilter.first.method = columnFilter.defaultMethod;
         }
-    }, {
-        key: "renderFilter",
-        value: function renderFilter(name) {
-            var filter = this;
-            var options = filter.column.filter.options;
-            var lang = MvcGrid.lang[filter.column.filter.name] || {};
-            var multiple = filter.type === "multi" ? " multiple" : "";
-            var methods = filter.methods.map(function (method) {
-                return "<option value=\"" + method + "\">" + (lang[method] || "") + "</option>";
-            }).join("");
 
-            return "<div class=\"popup-group\">\n                    <select class=\"mvc-grid-method\" data-filter=\"" + name + "\">\n                        " + methods + "\n                    </select>\n                </div>\n                <div class=\"popup-group\">" + (options ? "<select class=\"mvc-grid-value\" data-filter=\"" + name + "\"" + multiple + ">\n                          " + options.innerHTML + "\n                       </select>" : "<input class=\"mvc-grid-value\" data-filter=\"" + name + "\">") + "\n                </div>";
+        if (!columnFilter.second.method) {
+            columnFilter.second.method = columnFilter.defaultMethod;
         }
-    }, {
-        key: "renderOperator",
-        value: function renderOperator() {
-            var lang = MvcGrid.lang.operator;
 
-            return "<div class=\"popup-operator\">\n                    <div class=\"popup-group\">\n                        <select class=\"mvc-grid-operator\">\n                            <option value=\"\">" + lang.select + "</option>\n                            <option value=\"and\">" + lang.and + "</option>\n                            <option value=\"or\">" + lang.or + "</option>\n                        </select>\n                    </div>\n                </div>";
+        if (filter.methods.indexOf(columnFilter.first.method) < 0) {
+            columnFilter.first.method = filter.methods[0];
         }
-    }, {
-        key: "renderActions",
-        value: function renderActions() {
-            var lang = MvcGrid.lang.filter;
 
-            return "<div class=\"popup-actions\">\n                    <button type=\"button\" class=\"mvc-grid-apply\" type=\"button\">" + lang.apply + "</button>\n                    <button type=\"button\" class=\"mvc-grid-cancel\" type=\"button\">" + lang.remove + "</button>\n                </div>";
+        if (filter.methods.indexOf(columnFilter.second.method) < 0) {
+            columnFilter.second.method = filter.methods[0];
         }
-    }, {
-        key: "bindOperator",
-        value: function bindOperator() {
-            var filter = this.column.filter;
-            var operator = MvcGridPopup.element.querySelector(".mvc-grid-operator");
+    }
+    isValid(value) {
+        return !value || true;
+    }
+    validate(input) {
+        if (this.isValid(input.value)) {
+            input.classList.remove("invalid");
+        } else {
+            input.classList.add("invalid");
+        }
+    }
 
-            if (operator) {
-                operator.addEventListener("change", function () {
-                    filter.operator = this.value;
+    render() {
+        const filter = this;
+
+        return `<div class="popup-filter">
+                    ${filter.renderFilter("first")}
+                </div>
+                ${filter.mode === "excel" && filter.type === "double"
+                    ? `${filter.renderOperator()}
+                    <div class="popup-filter">
+                        ${filter.renderFilter("second")}
+                    </div>`
+                    : ""}
+                ${filter.renderActions()}`;
+    }
+    renderFilter(name) {
+        const filter = this;
+        const options = filter.column.filter.options;
+        const lang = MvcGrid.lang[filter.column.filter.name] || {};
+        const multiple = filter.type === "multi" ? " multiple" : "";
+        const methods = filter.methods.map(method => `<option value="${method}">${lang[method] || ""}</option>`).join("");
+
+        return `<div class="popup-group">
+                    <select class="mvc-grid-method" data-filter="${name}">
+                        ${methods}
+                    </select>
+                </div>
+                <div class="popup-group">${options
+                    ? `<select class="mvc-grid-value" data-filter="${name}"${multiple}>
+                          ${options.innerHTML}
+                       </select>`
+                    : `<input class="mvc-grid-value" data-filter="${name}">`}
+                </div>`;
+    }
+    renderOperator() {
+        const lang = MvcGrid.lang.operator;
+
+        return `<div class="popup-operator">
+                    <div class="popup-group">
+                        <select class="mvc-grid-operator">
+                            <option value="">${lang.select}</option>
+                            <option value="and">${lang.and}</option>
+                            <option value="or">${lang.or}</option>
+                        </select>
+                    </div>
+                </div>`;
+    }
+    renderActions() {
+        const lang = MvcGrid.lang.filter;
+
+        return `<div class="popup-actions">
+                    <button type="button" class="mvc-grid-apply" type="button">${lang.apply}</button>
+                    <button type="button" class="mvc-grid-cancel" type="button">${lang.remove}</button>
+                </div>`;
+    }
+    bindOperator() {
+        const filter = this.column.filter;
+        const operator = MvcGridPopup.element.querySelector(".mvc-grid-operator");
+
+        if (operator) {
+            operator.addEventListener("change", function () {
+                filter.operator = this.value;
+            });
+        }
+    }
+    bindMethods() {
+        const filter = this.column.filter;
+
+        for (const method of MvcGridPopup.element.querySelectorAll(".mvc-grid-method")) {
+            method.addEventListener("change", function () {
+                filter[this.dataset.filter].method = this.value;
+            });
+        }
+    }
+    bindValues() {
+        const filter = this;
+
+        for (const input of MvcGridPopup.element.querySelectorAll(".mvc-grid-value")) {
+            if (input.tagName === "SELECT") {
+                input.addEventListener("change", () => {
+                    const options = Array.from(input.options).filter(option => option.selected);
+
+                    filter.column.filter[input.dataset.filter].values = options.map(option => option.value);
+
+                    if (filter.mode !== "excel") {
+                        const inlineInput = filter.column.filter.inlineInput;
+
+                        if (filter.mode === "header" || filter.type === "multi") {
+                            inlineInput.value = options.map(option => option.text).join(", ");
+                        } else {
+                            inlineInput.value = input.value;
+                        }
+
+                        filter.validate(inlineInput);
+                    }
                 });
+            } else {
+                input.addEventListener("input", () => {
+                    filter.column.filter[input.dataset.filter].values = [input.value];
+
+                    if (filter.mode !== "excel") {
+                        const inlineInput = filter.column.filter.inlineInput;
+
+                        inlineInput.value = filter.column.filter[input.dataset.filter].values.join(", ");
+                        filter.validate(inlineInput);
+                    }
+
+                    filter.validate(input);
+                });
+
+                input.addEventListener("keyup", function (e) {
+                    if (e.which === 13 && filter.isValid(this.value)) {
+                        filter.column.filter.apply();
+                    }
+                });
+
+                filter.validate(input);
             }
         }
-    }, {
-        key: "bindMethods",
-        value: function bindMethods() {
-            var filter = this.column.filter;
+    }
+    bindActions() {
+        const filter = this.column.filter;
+        const popup = MvcGridPopup.element;
 
-            var _iteratorNormalCompletion15 = true;
-            var _didIteratorError15 = false;
-            var _iteratorError15 = undefined;
+        popup.querySelector(".mvc-grid-apply").addEventListener("click", filter.apply.bind(filter));
+        popup.querySelector(".mvc-grid-cancel").addEventListener("click", filter.cancel.bind(filter));
+    }
+}
 
-            try {
-                for (var _iterator15 = MvcGridPopup.element.querySelectorAll(".mvc-grid-method")[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
-                    var method = _step15.value;
+class MvcGridTextFilter extends MvcGridFilter {
+    constructor(column) {
+        super(column);
 
-                    method.addEventListener("change", function () {
-                        filter[this.dataset.filter].method = this.value;
-                    });
-                }
-            } catch (err) {
-                _didIteratorError15 = true;
-                _iteratorError15 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion15 && _iterator15.return) {
-                        _iterator15.return();
-                    }
-                } finally {
-                    if (_didIteratorError15) {
-                        throw _iteratorError15;
-                    }
-                }
-            }
-        }
-    }, {
-        key: "bindValues",
-        value: function bindValues() {
-            var filter = this;
+        this.cssClasses = "mvc-grid-text-filter";
+        this.methods = ["contains", "equals", "not-equals", "starts-with", "ends-with"];
+    }
+}
 
-            var _iteratorNormalCompletion16 = true;
-            var _didIteratorError16 = false;
-            var _iteratorError16 = undefined;
+class MvcGridNumberFilter extends MvcGridFilter {
+    constructor(column) {
+        super(column);
 
-            try {
-                var _loop2 = function _loop2() {
-                    var input = _step16.value;
-
-                    if (input.tagName === "SELECT") {
-                        input.addEventListener("change", function () {
-                            var options = Array.from(input.options).filter(function (option) {
-                                return option.selected;
-                            });
-
-                            filter.column.filter[input.dataset.filter].values = options.map(function (option) {
-                                return option.value;
-                            });
-
-                            if (filter.mode !== "excel") {
-                                var inlineInput = filter.column.filter.inlineInput;
-
-                                if (filter.mode === "header" || filter.type === "multi") {
-                                    inlineInput.value = options.map(function (option) {
-                                        return option.text;
-                                    }).join(", ");
-                                } else {
-                                    inlineInput.value = input.value;
-                                }
-
-                                filter.validate(inlineInput);
-                            }
-                        });
-                    } else {
-                        input.addEventListener("input", function () {
-                            filter.column.filter[input.dataset.filter].values = [input.value];
-
-                            if (filter.mode !== "excel") {
-                                var inlineInput = filter.column.filter.inlineInput;
-
-                                inlineInput.value = filter.column.filter[input.dataset.filter].values.join(", ");
-                                filter.validate(inlineInput);
-                            }
-
-                            filter.validate(input);
-                        });
-
-                        input.addEventListener("keyup", function (e) {
-                            if (e.which === 13 && filter.isValid(this.value)) {
-                                filter.column.filter.apply();
-                            }
-                        });
-
-                        filter.validate(input);
-                    }
-                };
-
-                for (var _iterator16 = MvcGridPopup.element.querySelectorAll(".mvc-grid-value")[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
-                    _loop2();
-                }
-            } catch (err) {
-                _didIteratorError16 = true;
-                _iteratorError16 = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion16 && _iterator16.return) {
-                        _iterator16.return();
-                    }
-                } finally {
-                    if (_didIteratorError16) {
-                        throw _iteratorError16;
-                    }
-                }
-            }
-        }
-    }, {
-        key: "bindActions",
-        value: function bindActions() {
-            var filter = this.column.filter;
-            var popup = MvcGridPopup.element;
-
-            popup.querySelector(".mvc-grid-apply").addEventListener("click", filter.apply.bind(filter));
-            popup.querySelector(".mvc-grid-cancel").addEventListener("click", filter.cancel.bind(filter));
-        }
-    }]);
-
-    return MvcGridFilter;
-}();
-
-var MvcGridTextFilter = function (_MvcGridFilter) {
-    _inherits(MvcGridTextFilter, _MvcGridFilter);
-
-    function MvcGridTextFilter(column) {
-        _classCallCheck(this, MvcGridTextFilter);
-
-        var _this4 = _possibleConstructorReturn(this, (MvcGridTextFilter.__proto__ || Object.getPrototypeOf(MvcGridTextFilter)).call(this, column));
-
-        _this4.cssClasses = "mvc-grid-text-filter";
-        _this4.methods = ["contains", "equals", "not-equals", "starts-with", "ends-with"];
-        return _this4;
+        this.cssClasses = "mvc-grid-number-filter";
+        this.methods = ["equals", "not-equals", "less-than", "greater-than", "less-than-or-equal", "greater-than-or-equal"];
     }
 
-    return MvcGridTextFilter;
-}(MvcGridFilter);
+    isValid(value) {
+        return !value || /^(?=.*\d+.*)[-+]?\d*[.,]?\d*$/.test(value);
+    }
+}
 
-var MvcGridNumberFilter = function (_MvcGridFilter2) {
-    _inherits(MvcGridNumberFilter, _MvcGridFilter2);
+class MvcGridDateFilter extends MvcGridFilter {
+    constructor(column) {
+        super(column);
 
-    function MvcGridNumberFilter(column) {
-        _classCallCheck(this, MvcGridNumberFilter);
+        this.cssClasses = "mvc-grid-date-filter";
+        this.methods = ["equals", "not-equals", "earlier-than", "later-than", "earlier-than-or-equal", "later-than-or-equal"];
+    }
+}
 
-        var _this5 = _possibleConstructorReturn(this, (MvcGridNumberFilter.__proto__ || Object.getPrototypeOf(MvcGridNumberFilter)).call(this, column));
+class MvcGridGuidFilter extends MvcGridFilter {
+    constructor(column) {
+        super(column);
 
-        _this5.cssClasses = "mvc-grid-number-filter";
-        _this5.methods = ["equals", "not-equals", "less-than", "greater-than", "less-than-or-equal", "greater-than-or-equal"];
-        return _this5;
+        this.cssClasses = "mvc-grid-guid-filter";
     }
 
-    _createClass(MvcGridNumberFilter, [{
-        key: "isValid",
-        value: function isValid(value) {
-            return !value || /^(?=.*\d+.*)[-+]?\d*[.,]?\d*$/.test(value);
-        }
-    }]);
-
-    return MvcGridNumberFilter;
-}(MvcGridFilter);
-
-var MvcGridDateFilter = function (_MvcGridFilter3) {
-    _inherits(MvcGridDateFilter, _MvcGridFilter3);
-
-    function MvcGridDateFilter(column) {
-        _classCallCheck(this, MvcGridDateFilter);
-
-        var _this6 = _possibleConstructorReturn(this, (MvcGridDateFilter.__proto__ || Object.getPrototypeOf(MvcGridDateFilter)).call(this, column));
-
-        _this6.cssClasses = "mvc-grid-date-filter";
-        _this6.methods = ["equals", "not-equals", "earlier-than", "later-than", "earlier-than-or-equal", "later-than-or-equal"];
-        return _this6;
+    isValid(value) {
+        return !value || /^[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}$/i.test(value);
     }
+}
 
-    return MvcGridDateFilter;
-}(MvcGridFilter);
+//# sourceMappingURL=index.js.map
 
-var MvcGridGuidFilter = function (_MvcGridFilter4) {
-    _inherits(MvcGridGuidFilter, _MvcGridFilter4);
-
-    function MvcGridGuidFilter(column) {
-        _classCallCheck(this, MvcGridGuidFilter);
-
-        var _this7 = _possibleConstructorReturn(this, (MvcGridGuidFilter.__proto__ || Object.getPrototypeOf(MvcGridGuidFilter)).call(this, column));
-
-        _this7.cssClasses = "mvc-grid-guid-filter";
-        return _this7;
-    }
-
-    _createClass(MvcGridGuidFilter, [{
-        key: "isValid",
-        value: function isValid(value) {
-            return !value || /^[0-9A-F]{8}[-]?([0-9A-F]{4}[-]?){3}[0-9A-F]{12}$/i.test(value);
-        }
-    }]);
-
-    return MvcGridGuidFilter;
-}(MvcGridFilter);
